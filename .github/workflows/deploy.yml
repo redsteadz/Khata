@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -32,31 +35,16 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
-      - name: Cache PNPM store and Next.js build cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pnpm-store
-            .next/cache
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('**/*.[jt]s', '**/*.[jt]sx') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}-
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Install Netlify CLI globally
-        run: pnpm add -g netlify-cli
+        run: npm install -g netlify-cli
 
       - name: Deploy with Netlify CLI directly
         run: netlify deploy --prod --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
